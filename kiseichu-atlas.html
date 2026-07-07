@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寄生虫圖譜 ── 占ひと標本館</title>
+<style>
+  :root{
+    --bg:#0c0a07; --bg2:#14100a; --cabinet:#181207;
+    --ink:#efe6d2; --dim:#b0a084; --faint:#7a6d55; --line:#3a2f1c;
+    --amber:#e8a13a; --amber-2:#c47a1e; --glow:rgba(232,161,58,.3);
+    --paper:#ece2c6; --paper-2:#dfd2ad; --plate-ink:#3a2b18; --plate-line:#8a704a;
+    --danger:#c65a2c;
+    --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+    --sans:"Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Roboto Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(130% 90% at 50% -12%, #1c1409 0%, var(--bg) 62%), var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.75; min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{ content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(rgba(120,95,50,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(120,95,50,.05) 1px,transparent 1px);
+    background-size:30px 30px; mask-image:radial-gradient(100% 100% at 50% 0%,#000 35%,transparent 92%);}
+  .wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:44px 22px 90px}
+
+  header{text-align:center;margin-bottom:30px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.36em;color:var(--faint);text-transform:uppercase;margin-bottom:16px}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(32px,7.5vw,50px);letter-spacing:.16em;margin:0;
+     text-shadow:0 0 30px rgba(232,161,58,.12)}
+  h1 .m{color:var(--amber)}
+  .sub{color:var(--dim);font-size:13px;margin-top:12px;letter-spacing:.05em}
+  .rule{width:64px;height:1px;background:linear-gradient(90deg,transparent,var(--amber-2),transparent);margin:20px auto 0}
+
+  .console{margin-top:28px;border:1px solid var(--line);border-radius:4px;
+    background:linear-gradient(180deg,rgba(28,21,12,.92),rgba(20,15,9,.92));padding:22px 20px}
+  .console-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;color:var(--faint);text-transform:uppercase;
+    margin-bottom:12px;display:flex;justify-content:space-between}
+  .field{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text]{flex:1 1 220px;min-width:0;background:#0b0906;border:1px solid var(--line);color:var(--ink);
+    font-family:var(--sans);font-size:15px;padding:13px 15px;border-radius:3px;letter-spacing:.04em;transition:.2s}
+  input[type=text]::placeholder{color:var(--faint)}
+  input[type=text]:focus{outline:none;border-color:var(--amber-2);box-shadow:0 0 0 3px rgba(232,161,58,.12)}
+  button{font-family:var(--sans);cursor:pointer;border-radius:3px;letter-spacing:.08em;transition:transform .12s,filter .2s,background .2s,border-color .2s,color .2s}
+  button:active{transform:translateY(1px)}
+  .btn-main{background:linear-gradient(180deg,var(--amber),var(--amber-2));color:#1a120a;border:none;font-weight:700;font-size:15px;padding:13px 22px;box-shadow:0 6px 20px -6px var(--glow)}
+  .btn-main:hover{filter:brightness(1.06)}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--dim);font-size:14px;padding:13px 18px}
+  .btn-ghost:hover{border-color:var(--amber-2);color:var(--amber)}
+  .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:12px;letter-spacing:.04em}
+
+  .tabs{display:flex;gap:8px;margin-top:26px;justify-content:center}
+  .tab{background:transparent;border:1px solid var(--line);color:var(--dim);font-size:13px;padding:9px 18px;letter-spacing:.1em}
+  .tab.on{border-color:var(--amber-2);color:var(--amber);background:rgba(232,161,58,.06)}
+
+  /* ---------- PLATE (parchment mounted in cabinet) ---------- */
+  #stage{margin-top:26px}
+  .plate-card{opacity:0;transform:translateY(14px);animation:rise .55s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .mount{background:linear-gradient(180deg,#100b06,#0a0705);border:1px solid var(--line);border-radius:6px;
+    padding:18px;box-shadow:0 26px 60px -30px rgba(0,0,0,.85)}
+  .plate{position:relative;background:
+      radial-gradient(120% 100% at 30% 15%, var(--paper) 0%, var(--paper-2) 100%);
+    border-radius:3px;padding:16px 16px 20px;box-shadow:inset 0 0 0 1px rgba(120,90,50,.35), 0 2px 0 rgba(0,0,0,.4)}
+  .plate .frame{position:absolute;inset:9px;border:1px solid var(--plate-line);border-radius:2px;pointer-events:none}
+  .plate .frame::before{content:"";position:absolute;inset:3px;border:1px solid rgba(138,112,74,.4)}
+  .corner{position:absolute;width:12px;height:12px;border:1px solid var(--plate-line)}
+  .cartouche{position:absolute;top:2px;left:50%;transform:translateX(-50%);background:var(--paper);
+    padding:2px 14px;font-family:var(--serif);font-size:12px;letter-spacing:.28em;color:var(--plate-ink);z-index:2}
+  .figno{position:absolute;top:20px;right:22px;font-family:var(--serif);font-style:italic;font-size:12px;color:#6b5636;z-index:2}
+  .illo{display:block;margin:14px auto 2px;width:min(360px,86%)}
+  .scale{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);font-size:9.5px;color:#7a6238;letter-spacing:.1em;margin-top:2px}
+  .scale .bar{display:inline-block;width:46px;height:1px;background:var(--plate-ink);position:relative}
+  .scale .bar::before,.scale .bar::after{content:"";position:absolute;top:-3px;width:1px;height:7px;background:var(--plate-ink)}
+  .scale .bar::before{left:0}.scale .bar::after{right:0}
+  .caption{text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(138,112,74,.4)}
+  .caption .binom{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--plate-ink);letter-spacing:.02em}
+  .caption .jp{font-family:var(--serif);font-size:20px;color:#2a2013;letter-spacing:.14em;margin-top:2px}
+  .caption .grp{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#8a704a;text-transform:uppercase;margin-top:6px}
+
+  /* ---------- fortune (cabinet ground) ---------- */
+  .oracle{margin-top:20px;padding:22px 20px;border:1px solid var(--line);border-radius:5px;
+    background:linear-gradient(180deg,rgba(28,21,12,.75),rgba(18,13,8,.75))}
+  .oracle .rank{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--amber);border:1px solid var(--amber-2);padding:2px 9px;border-radius:2px;display:inline-block;margin-bottom:12px}
+  .catbadge{font-family:var(--serif);font-size:12px;letter-spacing:.14em;color:#f0c675;border:1px solid #6b4e22;background:rgba(232,161,58,.08);padding:2px 10px;border-radius:2px;display:inline-block;margin:0 0 12px 8px}
+  .catbadge .paw{color:var(--amber)}
+  .thumb .paw{position:absolute;margin-top:-2px;margin-left:2px}
+  .thumb{position:relative}
+  .thumb .catmark{position:absolute;top:6px;right:8px;font-family:var(--serif);font-size:11px;color:#caa25c;letter-spacing:.1em}
+  .verdict{font-family:var(--serif);font-size:20px;line-height:1.65;color:var(--amber);margin:0}
+  .fortune{color:var(--ink);font-size:15.5px;margin:12px 0 18px}
+  .lucky{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .lucky div{background:var(--bg2);padding:11px 14px}
+  .lucky .k{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase}
+  .lucky .v{font-size:14.5px;color:var(--ink);margin-top:3px}
+
+  .facts{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:5px;background:rgba(20,15,9,.6)}
+  .facts h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase;margin:0 0 14px}
+  .facts h3 .real{color:var(--danger)}
+  .fact-row{display:flex;gap:12px;margin-bottom:11px;align-items:flex-start}
+  .fact-row .dot{color:var(--amber);flex:0 0 auto;margin-top:3px;font-size:11px}
+  .fact-row .txt{color:var(--dim);font-size:14px;line-height:1.7}
+  .fact-row .txt b{color:var(--ink);font-weight:600}
+  .reflink{display:inline-flex;align-items:center;gap:7px;margin-top:6px;font-family:var(--mono);font-size:11px;
+    color:var(--amber);text-decoration:none;border-bottom:1px dotted var(--amber-2);padding-bottom:1px}
+  .reflink:hover{color:#f4c069}
+  .reflink small{color:var(--faint);letter-spacing:.04em}
+
+  .actions{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+  .actions .seed{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em}
+  .again{background:transparent;border:1px solid var(--line);color:var(--dim);font-size:12px;padding:9px 16px}
+  .again:hover{border-color:var(--amber-2);color:var(--amber)}
+
+  /* ---------- collection grid ---------- */
+  #shelf{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+  .thumb{cursor:pointer;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:linear-gradient(180deg,#100b06,#0a0705);
+    transition:transform .15s,border-color .2s;padding:8px}
+  .thumb:hover{transform:translateY(-3px);border-color:var(--amber-2)}
+  .thumb .mini{background:radial-gradient(120% 100% at 30% 15%,var(--paper),var(--paper-2));border-radius:2px;padding:4px}
+  .thumb .mini svg{display:block;width:100%;height:auto}
+  .thumb .tno{font-family:var(--serif);font-style:italic;font-size:10px;color:var(--faint);margin-top:7px}
+  .thumb .tjp{font-family:var(--serif);font-size:13px;color:var(--ink);letter-spacing:.06em;line-height:1.35}
+  .back{background:transparent;border:1px solid var(--line);color:var(--dim);font-size:12px;padding:8px 16px;margin-bottom:6px}
+  .back:hover{border-color:var(--amber-2);color:var(--amber)}
+
+  .disclaimer{text-align:center;color:var(--faint);font-size:11.5px;margin-top:34px;line-height:1.9;letter-spacing:.03em}
+  .hidden{display:none}
+  @media(max-width:440px){.lucky{grid-template-columns:1fr}.caption .jp{font-size:18px}}
+  @media (prefers-reduced-motion:reduce){.plate-card{animation:none;opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">KJ Atlas of Parasites ── 全五十三圖版</div>
+    <h1>寄生<span class="m">虫</span>圖譜</h1>
+    <div class="sub">あなたの内側に棲みつく一匹を、五十三の圖版から選び出す標本占ひ。</div>
+    <div class="rule"></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" id="tabOracle">◉ 占ひ</button>
+    <button class="tab" id="tabShelf">▦ 標本棚（全53）</button>
+  </div>
+
+  <!-- 占ひ view -->
+  <div id="oracleView">
+    <div class="console">
+      <div class="console-label"><span>◉ 検体登録</span><span id="seedEcho">SEED : ————</span></div>
+      <div class="field">
+        <input type="text" id="nameInput" placeholder="名前・ハンドルネーム（空でも占えます）" maxlength="24" autocomplete="off">
+        <button class="btn-main" id="divineBtn">占ふ</button>
+        <button class="btn-ghost" id="randomBtn">おまかせ捕獲</button>
+      </div>
+      <div class="hint">同じ名前は必ず同じ圖版に宿ります（シード式・再現可能）</div>
+    </div>
+    <div id="stage"></div>
+  </div>
+
+  <!-- 標本棚 view -->
+  <div id="shelfView" class="hidden">
+    <div id="shelfDetail" class="hidden">
+      <button class="back" id="backBtn">← 棚に戻る</button>
+      <div id="shelfStage"></div>
+    </div>
+    <div id="shelf"></div>
+  </div>
+
+  <p class="disclaimer">
+    ※ 圖版は自作の科学図版風イラスト（依存ゼロ・オフライン完結）。各種の「本物の生態」は実在の特性です。占ひは娯楽。<br>
+    「参考写真」は外部Wikipediaへのリンクで、画像は本ファイルに含みません。手洗いはしませう。
+  </p>
+</div>
+
+<script>
+/* =========================================================
+   決定論的 RNG
+========================================================= */
+function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}return (h>>>0);}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;}}
+const pick=(rng,arr)=>arr[Math.floor(rng()*arr.length)];
+function roman(n){const m=[["M",1000],["CM",900],["D",500],["CD",400],["C",100],["XC",90],["L",50],["XL",40],["X",10],["IX",9],["V",5],["IV",4],["I",1]];let r="";for(const[s,v]of m){while(n>=v){r+=s;n-=v;}}return r;}
+
+/* =========================================================
+   図版エンジン（銅版画風 科学イラスト SVG）
+   すべて viewBox 0 0 320 320。ink 線画 + 手描きハッチ。
+========================================================= */
+const INK="#3a2b18", LINE="#5c4426", HATCH="rgba(58,43,24,.55)", SOFT="rgba(58,43,24,.28)";
+
+function sampleCubic(p0,p1,p2,p3,n){const a=[];for(let i=0;i<=n;i++){const t=i/n,u=1-t;
+  a.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,
+          y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}return a;}
+function taperPath(pts,maxHW,pow){ // closed worm outline, pointed ends
+  const L=[],R=[],n=pts.length-1;pow=pow||0.62;
+  for(let i=0;i<=n;i++){const t=i/n;const pr=pts[Math.max(0,i-1)],nx2=pts[Math.min(n,i+1)];
+    let dx=nx2.x-pr.x,dy=nx2.y-pr.y;const len=Math.hypot(dx,dy)||1;const nx=-dy/len,ny=dx/len;
+    const w=maxHW*Math.pow(Math.sin(Math.PI*t),pow)+0.6;
+    L.push([pts[i].x+nx*w,pts[i].y+ny*w]);R.push([pts[i].x-nx*w,pts[i].y-ny*w]);}
+  let d='M'+L[0][0].toFixed(1)+' '+L[0][1].toFixed(1);
+  for(let i=1;i<L.length;i++)d+='L'+L[i][0].toFixed(1)+' '+L[i][1].toFixed(1);
+  for(let i=R.length-1;i>=0;i--)d+='L'+R[i][0].toFixed(1)+' '+R[i][1].toFixed(1);
+  return d+'Z';}
+function hatchLines(cx,cy,w,h,angle,gap,n){ // parallel short hatch strokes
+  let s='',rad=angle*Math.PI/180,dx=Math.cos(rad),dy=Math.sin(rad),px=-dy,py=dx;
+  for(let i=0;i<n;i++){const t=(i-(n-1)/2)*gap;const ox=cx+px*t,oy=cy+py*t;
+    s+=`<line x1="${(ox-dx*w/2).toFixed(1)}" y1="${(oy-dy*w/2).toFixed(1)}" x2="${(ox+dx*w/2).toFixed(1)}" y2="${(oy+dy*w/2).toFixed(1)}" stroke="${HATCH}" stroke-width="1"/>`;}
+  return s;
+}
+
+// ---- NEMATODE (roundworms) ----
+function drawNematode(p){
+  const form=p.form||'spindle';
+  if(form==='cystcoil'){ // Trichinella: coil inside lemon cyst
+    return `<g stroke="${INK}" fill="none" stroke-width="2">
+      <ellipse cx="160" cy="160" rx="92" ry="66" fill="#f6efdb"/>
+      <ellipse cx="160" cy="160" rx="92" ry="66"/>
+      <path d="M110 160 q14 -34 50 -34 q40 0 40 30 q0 26 -34 26 q-30 0 -30 -22 q0 -18 22 -18 q16 0 16 14" stroke-width="2.4"/>
+      ${hatchLines(160,160,150,110,20,9,6)}
+    </g>`;
+  }
+  let d,tail;
+  if(form==='whip'){ // Trichuris: thin front, thick back
+    d=`M70 90 q10 20 30 30 q40 22 70 60 q30 38 60 46`;
+    return `<g stroke="${INK}" fill="none" stroke-width="2">
+      <path d="M60 84 q22 30 60 46 q46 20 74 58 q22 30 66 40" stroke-width="1.6"/>
+      <path d="M150 150 q40 24 60 60 q16 30 62 46 q10 4 20 -2 q8 -10 -4 -18 q-40 -18 -56 -52 q-20 -42 -66 -60" fill="#f0e7cf"/>
+      ${hatchLines(210,190,70,30,60,6,4)}
+    </g>`;
+  }
+  if(form==='hook'){ // Ancylostoma: bent anterior, buccal capsule
+    return `<g stroke="${INK}" fill="none" stroke-width="2.4">
+      <path d="M96 210 q-4 -70 40 -104 q30 -22 20 -56" fill="#f0e7cf"/>
+      <path d="M116 44 q-14 8 -12 26 q2 12 18 12 q14 0 12 -16" fill="#e9dcbc"/>
+      <circle cx="118" cy="52" r="3" fill="${INK}"/>
+      <path d="M96 210 q4 24 -8 40" stroke-width="1.6"/>
+      ${hatchLines(120,150,90,26,72,7,5)}
+    </g>`;
+  }
+  if(form==='thread'){ // filaria / strongyloides: very long thin sinuous
+    return `<g stroke="${INK}" fill="none" stroke-width="1.6">
+      <path d="M52 150 C90 90,120 210,160 150 S230 90,268 150"/>
+      <path d="M52 150 C90 92,120 208,160 150 S230 92,268 150" transform="translate(0,10)" stroke="${SOFT}" stroke-width="1"/>
+      <circle cx="52" cy="150" r="3" fill="${INK}"/>
+    </g>`;
+  }
+  if(form==='long'){ // Dracunculus: extremely long coiled
+    return `<g stroke="${INK}" fill="none" stroke-width="2">
+      <path d="M160 160 m0 0 a10 10 0 1 1 0.1 0 M160 160 c40 -8 60 30 30 60 c-40 40 -110 20 -120 -34 c-10 -66 70 -110 140 -96 c78 16 96 108 40 150" stroke-width="1.8"/>
+      <circle cx="162" cy="160" r="4" fill="${INK}"/>
+    </g>`;
+  }
+  // default spindle (Anisakis, Ascaris, Enterobius, Toxocara, Angiostrongylus)
+  const curl=(p.curl==null?0.3:p.curl), hw=p.thick||15;
+  const cl=sampleCubic(
+    {x:112,y:52},
+    {x:250+curl*20,y:120},
+    {x:250+curl*20,y:210},
+    {x:118,y:274}, 40);
+  // cuticle striations across body
+  let str='';
+  for(let i=4;i<cl.length-4;i+=3){const a=cl[i-1],b=cl[i+1];let dx=b.x-a.x,dy=b.y-a.y;const l=Math.hypot(dx,dy)||1;
+    const nx=-dy/l,ny=dx/l;const t=i/cl.length;const w=hw*Math.pow(Math.sin(Math.PI*t),0.62)*0.9;
+    str+=`<line x1="${(cl[i].x-nx*w).toFixed(1)}" y1="${(cl[i].y-ny*w).toFixed(1)}" x2="${(cl[i].x+nx*w).toFixed(1)}" y2="${(cl[i].y+ny*w).toFixed(1)}" stroke="${SOFT}" stroke-width="0.9"/>`;}
+  // internal digestive line
+  let mid='M'+cl[2].x.toFixed(1)+' '+cl[2].y.toFixed(1);
+  for(let i=3;i<cl.length-2;i++)mid+='L'+cl[i].x.toFixed(1)+' '+cl[i].y.toFixed(1);
+  return `<g stroke="${INK}" fill="none" stroke-width="2">
+    <path d="${taperPath(cl,hw)}" fill="#f0e7cf"/>
+    <path d="${mid}" stroke="${SOFT}" stroke-width="1.1"/>
+    ${str}
+    <circle cx="${cl[0].x.toFixed(1)}" cy="${cl[0].y.toFixed(1)}" r="3" fill="${INK}"/>
+  </g>`;
+}
+
+// ---- CESTODE (tapeworms) ----
+function drawCestode(p){
+  const seg=p.seg||6, hooks=p.hooks, sc=p.scolex||'suckers', broad=p.broad;
+  let s=`<g stroke="${INK}" fill="none" stroke-width="2">`;
+  // scolex head (top)
+  s+=`<circle cx="160" cy="60" r="26" fill="#f0e7cf"/>`;
+  if(sc==='bothria'){ // Diphyllobothrium: two slit grooves
+    s+=`<line x1="150" y1="44" x2="150" y2="76" stroke-width="3"/><line x1="170" y1="44" x2="170" y2="76" stroke-width="3"/>`;
+  }else{
+    s+=`<circle cx="148" cy="52" r="6"/><circle cx="172" cy="52" r="6"/><circle cx="148" cy="72" r="6"/><circle cx="172" cy="72" r="6"/>`;
+    if(hooks){ // rostellum crown
+      s+=`<circle cx="160" cy="40" r="9" fill="#e9dcbc"/>`;
+      for(let i=0;i<8;i++){const a=(-Math.PI/2)+(i-3.5)*0.3;s+=`<line x1="${160+Math.cos(a)*9}" y1="${40+Math.sin(a)*9}" x2="${160+Math.cos(a)*15}" y2="${40+Math.sin(a)*15}" stroke-width="1.5"/>`;}
+    }
+  }
+  // neck + proglottid chain
+  s+=`<path d="M160 86 q0 12 0 20" />`;
+  let y=108;
+  for(let i=0;i<seg;i++){
+    const w=(broad?70:30)+i*(broad?4:6), h=18+i*2;
+    s+=`<rect x="${160-w/2}" y="${y}" width="${w}" height="${h}" rx="4" fill="#f0e7cf"/>`;
+    // genital pore / uterus mark
+    if(p.uterus==='rose') s+=`<path d="M160 ${y+h/2} q-8 -6 0 -12 q8 6 0 12 M160 ${y+h/2} q-8 6 0 12 q8 -6 0 -12" stroke="${SOFT}" stroke-width="1"/>`;
+    else s+=`<circle cx="${160-w/2+4}" cy="${y+h/2}" r="2.5" fill="${INK}"/>`;
+    y+=h+3;
+  }
+  s+=`</g>`;
+  return s;
+}
+
+// ---- TREMATODE (flukes) ----
+function drawTrematode(p){
+  const f=p.form||'leaf';
+  if(f==='paired'){ // Schistosoma: male holding female
+    return `<g stroke="${INK}" fill="none" stroke-width="2">
+      <path d="M80 90 C60 160,70 230,120 250 C150 262,150 230,130 210 C90 170,110 120,120 100 C130 80,100 78,80 90 Z" fill="#f0e7cf"/>
+      <path d="M118 104 C150 150,150 210,132 236" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>
+      <path d="M118 104 C150 150,150 210,132 236" stroke="#f6efdb" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="86" cy="98" r="9" fill="#e9dcbc"/><circle cx="86" cy="98" r="4"/>
+      <circle cx="100" cy="126" r="8"/>
+      ${hatchLines(100,180,90,50,70,9,5)}
+    </g>`;
+  }
+  if(f==='broodsac'){ // Leucochloridium banded sac
+    return `<g stroke="${INK}" fill="none" stroke-width="2">
+      <path d="M110 70 C150 60,190 90,196 150 C202 220,170 260,150 258 C120 254,116 210,120 170 C124 120,86 110,110 70 Z" fill="#f0e7cf"/>
+      ${[90,120,150,180,210].map(y=>`<path d="M${120-Math.abs(y-150)/6} ${y} q40 -10 60 0" stroke="${INK}" stroke-width="3"/>`).join('')}
+    </g>`;
+  }
+  let body;
+  if(f==='slender') body=`M160 40 C120 100,120 220,160 280 C200 220,200 100,160 40 Z`;
+  else if(f==='tiny') body=`M160 110 C130 130,130 200,160 220 C190 200,190 130,160 110 Z`;
+  else if(f==='ovoid') body=`M160 70 C110 100,110 220,160 250 C210 220,210 100,160 70 Z`;
+  else body=`M160 46 C100 90,96 210,160 274 C224 210,220 90,160 46 Z`; // leaf
+  return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+    <path d="${body}" fill="#f0e7cf"/>
+    <circle cx="160" cy="${f==='tiny'?128:78}" r="9" fill="#e9dcbc"/><circle cx="160" cy="${f==='tiny'?128:78}" r="4"/>
+    <circle cx="160" cy="${f==='tiny'?165:140}" r="11"/><circle cx="160" cy="${f==='tiny'?165:140}" r="4"/>
+    <path d="M140 170 q20 30 0 70 M180 170 q-20 30 0 70" stroke="${SOFT}" stroke-width="1.4"/>
+    ${hatchLines(160,200,60,90,75,11,5)}
+  </g>`;
+}
+
+// ---- PROTOZOA ----
+function drawProtozoan(p){
+  const s=p.sub;
+  if(s==='ring'||s==='maltese'){ // in RBC
+    let g=`<g stroke="${INK}" fill="none" stroke-width="2"><circle cx="160" cy="160" r="86" fill="#f2e9d2"/><circle cx="160" cy="160" r="86"/>`;
+    if(s==='ring'){g+=`<path d="M160 108 a52 52 0 1 1 -20 6" stroke-width="8" stroke-linecap="round"/><circle cx="150" cy="118" r="9" fill="${INK}"/>`;}
+    else{ // Babesia Maltese cross (4 pear bodies)
+      for(let i=0;i<4;i++){const a=i*Math.PI/2;const x=160+Math.cos(a)*24,y=160+Math.sin(a)*24;
+        g+=`<ellipse cx="${x}" cy="${y}" rx="14" ry="9" transform="rotate(${i*90} ${x} ${y})" fill="#e9dcbc"/><ellipse cx="${x}" cy="${y}" rx="14" ry="9" transform="rotate(${i*90} ${x} ${y})"/>`;}
+    }
+    return g+`</g>`;
+  }
+  if(s==='crescent'){ // Toxoplasma tachyzoite
+    return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+      <path d="M100 220 C 90 120,180 90,230 110 C 180 130,150 200,120 232 C110 240,102 234,100 220 Z" fill="#f0e7cf"/>
+      <circle cx="150" cy="170" r="16" fill="#e9dcbc"/><circle cx="150" cy="170" r="6"/>
+      ${hatchLines(150,160,110,60,-40,9,5)}
+    </g>`;
+  }
+  if(s==='giardia'){ // teardrop with 2 nuclei "face" + flagella
+    return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+      <path d="M160 70 C110 100,110 210,160 250 C210 210,210 100,160 70 Z" fill="#f0e7cf"/>
+      <circle cx="140" cy="118" r="13" fill="#e9dcbc"/><circle cx="180" cy="118" r="13" fill="#e9dcbc"/>
+      <circle cx="140" cy="118" r="4" fill="${INK}"/><circle cx="180" cy="118" r="4" fill="${INK}"/>
+      <path d="M150 150 q10 14 20 0" stroke-width="1.6"/>
+      ${[0,1,2].map(i=>`<path d="M${150+i*7} 250 q${i%2?-8:8} 26 0 46" stroke-width="1.4"/>`).join('')}
+      <path d="M120 100 q-24 -10 -30 -28 M200 100 q24 -10 30 -28" stroke-width="1.4"/>
+    </g>`;
+  }
+  if(s==='oocyst'){ // Crypto: small circle w/ sporozoites
+    return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+      <circle cx="160" cy="160" r="70" fill="#f0e7cf"/>
+      ${[0,1,2,3].map(i=>{const a=i*Math.PI/2+.4;return `<path d="M${160+Math.cos(a)*10} ${160+Math.sin(a)*10} q${Math.cos(a)*30} ${Math.sin(a)*30} ${Math.cos(a)*44} ${Math.sin(a)*44}" stroke-width="6" stroke-linecap="round"/>`;}).join('')}
+    </g>`;
+  }
+  if(s==='tryp'){ // trypanosome flagellate
+    const c=p.cform;
+    return `<g stroke="${INK}" fill="none" stroke-width="2.4">
+      <path d="${c?'M110 90 C60 140,80 220,150 240 C110 200,120 150,150 120 C180 96,140 84,110 90 Z':'M90 90 C70 150,120 210,210 236 C160 200,150 150,150 120 C150 96,110 80,90 90 Z'}" fill="#f0e7cf"/>
+      <path d="${c?'M112 92 C70 140,90 210,150 236':'M92 92 C80 150,130 205,206 232'}" stroke="${INK}" stroke-width="1.4"/>
+      <path d="${c?'M110 90 q-20 -14 -30 -32':'M90 90 q-16 -18 -30 -30'}" stroke-width="1.6"/>
+      <circle cx="150" cy="150" r="12" fill="#e9dcbc"/><circle cx="150" cy="150" r="5"/>
+      <circle cx="${c?128:120}" cy="110" r="4" fill="${INK}"/>
+    </g>`;
+  }
+  if(s==='trichomonas'){ // pear + anterior flagella + undulating membrane
+    return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+      <path d="M160 90 C120 120,120 210,160 244 C200 210,200 120,160 90 Z" fill="#f0e7cf"/>
+      <circle cx="160" cy="140" r="12" fill="#e9dcbc"/><circle cx="160" cy="140" r="5"/>
+      ${[0,1,2,3].map(i=>`<path d="M${146+i*6} 96 q${i%2?-10:10} -30 ${i%2?-16:16} -46" stroke-width="1.4"/>`).join('')}
+      <path d="M200 120 q22 40 -6 100" stroke-width="1.4"/>
+      <path d="M160 244 q0 20 6 40" stroke-width="1.4"/>
+    </g>`;
+  }
+  // amoeba (Entamoeba / Naegleria / Acanthamoeba)
+  const spiky=(s==='acantha');
+  let blob='M160 90 ';const pts=12;let path='';
+  for(let i=0;i<=pts;i++){const a=i/pts*Math.PI*2;const r=70+Math.sin(i*1.7)*(spiky?4:16);path+=`${i?'L':'M'}${(160+Math.cos(a)*r).toFixed(0)} ${(160+Math.sin(a)*r).toFixed(0)} `;}
+  let spikes='';
+  if(spiky){for(let i=0;i<16;i++){const a=i/16*Math.PI*2;spikes+=`<line x1="${160+Math.cos(a)*66}" y1="${160+Math.sin(a)*66}" x2="${160+Math.cos(a)*92}" y2="${160+Math.sin(a)*92}" stroke="${INK}" stroke-width="1.4"/>`;}}
+  return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+    <path d="${path}Z" fill="#f0e7cf"/>${spikes}
+    <circle cx="150" cy="150" r="20" fill="#e9dcbc"/><circle cx="150" cy="150" r="6" fill="${INK}"/>
+    <circle cx="185" cy="185" r="8" fill="${SOFT}"/><circle cx="140" cy="190" r="6" fill="${SOFT}"/>
+  </g>`;
+}
+
+// ---- ARTHROPODA ----
+function legPair(cx,cy,len,spread,claw){let s='';for(const dir of [-1,1]){const ex=cx+dir*len,ey=cy+spread;
+  s+=`<path d="M${cx} ${cy} q${dir*len*0.5} ${spread*0.2} ${dir*len*0.7} ${spread*0.6} q${dir*len*0.2} ${spread*0.5} ${dir*len*0.3} ${spread}" stroke="${INK}" stroke-width="2" fill="none"/>`;
+  if(claw)s+=`<path d="M${ex} ${ey} l${dir*4} 4 m0 -4 l${dir*-3} 4" stroke="${INK}" stroke-width="1.6"/>`;}
+  return s;}
+function drawArthropod(p){
+  const s=p.sub;
+  if(s==='louse'||s==='crab'){
+    const crab=(s==='crab');
+    let g=`<g stroke="${INK}" fill="none" stroke-width="2.2">`;
+    // body
+    if(crab)g+=`<ellipse cx="160" cy="170" rx="46" ry="40" fill="#f0e7cf"/>`;
+    else g+=`<path d="M160 90 C130 100,130 250,160 262 C190 250,190 100,160 90 Z" fill="#f0e7cf"/>`;
+    g+=`<circle cx="160" cy="${crab?116:74}" r="16" fill="#e9dcbc"/>`; // head
+    g+=`<line x1="150" y1="${crab?104:62}" x2="140" y2="${crab?92:50}" stroke-width="1.6"/><line x1="170" y1="${crab?104:62}" x2="180" y2="${crab?92:50}" stroke-width="1.6"/>`; // antennae
+    // 6 legs w/ claws
+    const ys=crab?[150,170,190]:[120,160,200];
+    ys.forEach((y,i)=>{g+=legPair(160,y,crab?40:34,crab?18:26,true);});
+    g+=`</g>`;return g;
+  }
+  if(s==='mite'||s==='tick'||s==='chigger'){
+    const legs=(s==='chigger')?3:4; // chigger larva = 6 legs
+    let g=`<g stroke="${INK}" fill="none" stroke-width="2.2"><ellipse cx="160" cy="170" rx="60" ry="52" fill="#f0e7cf"/>`;
+    // gnathosoma / capitulum
+    g+=`<path d="M148 116 q12 -20 24 0 q-4 10 -12 10 q-8 0 -12 -10 Z" fill="#e9dcbc"/>`;
+    if(s==='tick')g+=`<ellipse cx="160" cy="170" rx="60" ry="52"/><path d="M120 140 q40 -14 80 0" stroke="${SOFT}"/>`;
+    if(s==='mite')g+=`${hatchLines(160,180,80,80,90,7,5)}`;
+    for(let i=0;i<legs;i++){const y=140+i*22;g+=legPair(160,y,50,10,true);}
+    g+=`</g>`;return g;
+  }
+  if(s==='demodex'){ // elongate worm-like mite, tiny legs at front
+    return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+      <path d="M160 60 C138 90,140 150,150 200 C154 230,166 230,170 200 C180 150,182 90,160 60 Z" fill="#f0e7cf"/>
+      ${[0,1,2,3].map(i=>`<g>${legPair(160,96+i*14,26,4,false)}</g>`).join('')}
+      <path d="M150 210 q10 60 20 0" stroke="${SOFT}"/>
+    </g>`;
+  }
+  if(s==='bedbug'){ // flat oval, 6 legs, antennae
+    let g=`<g stroke="${INK}" fill="none" stroke-width="2.2"><ellipse cx="160" cy="170" rx="54" ry="64" fill="#f0e7cf"/>`;
+    g+=`<circle cx="160" cy="112" r="16" fill="#e9dcbc"/><line x1="150" y1="100" x2="136" y2="86"/><line x1="170" y1="100" x2="184" y2="86"/>`;
+    g+=`${hatchLines(160,190,90,90,90,10,5)}`;
+    [150,180,210].forEach(y=>g+=legPair(160,y,54,10,false));
+    return g+`</g>`;
+  }
+  if(s==='flea'||s==='tunga'){ // laterally compressed, big hind legs
+    const eng=(s==='tunga');
+    return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+      <path d="${eng?'M120 160 a70 70 0 1 0 140 0 a70 70 0 1 0 -140 0':'M110 150 C110 100,180 100,210 160 C230 200,180 240,140 230 C110 222,110 190,110 150 Z'}" fill="#f0e7cf"/>
+      <circle cx="${eng?196:120}" cy="${eng?150:140}" r="12" fill="#e9dcbc"/>
+      <path d="M${eng?208:130} ${eng?150:132} q20 -10 34 -4" stroke-width="1.6"/>
+      <path d="M180 210 q40 30 60 20 M180 210 q30 40 20 60" stroke-width="2.4"/>
+      <path d="M160 220 q20 26 10 44" stroke-width="2"/>
+      ${eng?'<circle cx="180" cy="180" r="40" stroke="'+SOFT+'"/>':''}
+    </g>`;
+  }
+  // maggot (Dermatobia botfly larva)
+  return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+    <path d="M160 60 C120 80,116 180,140 240 C150 264,170 264,180 240 C204 180,200 80,160 60 Z" fill="#f0e7cf"/>
+    ${[90,120,150,180,210].map(y=>`<path d="M${160-(1-Math.abs(y-150)/120)*40} ${y} q40 -8 ${(1-Math.abs(y-150)/120)*80} 0" stroke="${INK}" stroke-width="1.6"/>`).join('')}
+    ${[100,130,160].map(y=>[130,160,190].map(x=>`<path d="M${x} ${y} l3 -6 l3 6" stroke="${INK}" stroke-width="1.2"/>`).join('')).join('')}
+  </g>`;
+}
+
+// ---- SINGLETONS ----
+function drawNematomorph(){
+  return `<g stroke="${INK}" fill="none" stroke-width="2">
+    <path d="M70 90 C 200 60,240 140,180 170 C 100 210,60 150,140 120 C 260 78,270 220,150 250 C 90 265,70 210,120 200" stroke-width="1.8"/>
+    <circle cx="70" cy="90" r="3.5" fill="${INK}"/>
+  </g>`;
+}
+function drawIsopod(){ // Cymothoa
+  let g=`<g stroke="${INK}" fill="none" stroke-width="2.2"><path d="M120 70 C104 120,104 210,130 250 C150 262,170 262,190 250 C216 210,216 120,200 70 C186 54,134 54,120 70 Z" fill="#f0e7cf"/>`;
+  g+=`<circle cx="146" cy="86" r="6" fill="${INK}"/><circle cx="174" cy="86" r="6" fill="${INK}"/>`; // eyes
+  for(let i=0;i<7;i++){const y=100+i*20;g+=legPair(160,y,40,8,true);g+=`<line x1="118" y1="${y}" x2="202" y2="${y}" stroke="${SOFT}" stroke-width="1"/>`;}
+  return g+`</g>`;
+}
+function drawFish(){ // Candiru
+  return `<g stroke="${INK}" fill="none" stroke-width="2.2">
+    <path d="M60 160 C120 120,220 120,250 150 C230 156,230 164,250 170 C220 200,120 200,60 160 Z" fill="#f0e7cf"/>
+    <path d="M250 150 l30 -16 l-6 26 l24 4 l-30 20 l4 -22 Z" fill="#e9dcbc"/>
+    <circle cx="96" cy="152" r="4" fill="${INK}"/>
+    <path d="M64 160 q-10 -6 -18 -4 M64 164 q-10 6 -18 6 M70 156 q-12 -10 -22 -12" stroke-width="1.4"/>
+    <path d="M150 128 q10 -16 26 0 M150 192 q10 16 30 0" stroke-width="1.4"/>
+    ${hatchLines(150,160,150,30,0,8,4)}
+  </g>`;
+}
+
+function buildFigure(sp){
+  switch(sp.g){
+    case 'nema': return drawNematode(sp);
+    case 'cest': return drawCestode(sp);
+    case 'trem': return drawTrematode(sp);
+    case 'proto': return drawProtozoan(sp);
+    case 'arth': return drawArthropod(sp);
+    case 'gordian': return drawNematomorph();
+    case 'isopod': return drawIsopod();
+    case 'fish': return drawFish();
+  }
+}
+function illoSVG(sp){
+  return `<svg class="illo" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-label="${sp.jp}の図版">
+    <rect width="320" height="320" fill="none"/>
+    ${buildFigure(sp)}
+  </svg>`;
+}
+
+/* =========================================================
+   データ（全50種・生態は実在特性）
+========================================================= */
+const GRP_LABEL={nema:"線虫類 Nematoda",cest:"条虫類 Cestoda",trem:"吸虫類 Trematoda",proto:"原虫類 Protozoa",arth:"節足動物 Arthropoda",gordian:"類線形動物 Nematomorpha",isopod:"等脚類 Isopoda",fish:"魚類（寄生性）"};
+
+const DATA=[
+/* NEMATODA */
+{jp:"アニサキス",la:"Anisakis simplex",g:"nema",form:"spindle",curl:0.3,
+ v:"衝動が刺さるタイプ。",f:"思い立ったら即・突撃。当たれば激痛、外せば爽快。生モノと夜更けの誘惑にご用心。",
+ lk:{ラッキーフード:"よく締めた〆鯖",行動:"冷凍してから決断"},
+ fa:["サバ・イカ等の生食で感染し、幼虫が<b>胃壁や腸壁に刺さって</b>激痛を起こす。","人は本来の宿主でないため<b>数日で力尽きる</b>。","−20℃24時間以上の冷凍か加熱で死滅。醤油やわさびでは死なない。"],w:"アニサキス"},
+{jp:"回虫",la:"Ascaris lumbricoides",g:"nema",form:"spindle",curl:0.2,
+ v:"古き良き王道の大物。",f:"流行に流されず堂々。安定感抜群だが環境変化に少し弱い。清潔さが運を守る。",
+ lk:{ラッキーフード:"よく洗った生野菜",数:"20〜30(cm)"},
+ fa:["腸に寄生する<b>20〜30cmの大型線虫</b>で、かつて日本にも多かった。","幼虫は一度<b>肺を通って</b>気管から飲み込まれ腸に戻る複雑な移動をする。","衛生改善で日本では激減したが世界では今も代表的な寄生虫。"],w:"回虫"},
+{jp:"蟯虫",la:"Enterobius vermicularis",g:"nema",form:"spindle",curl:0.4,
+ v:"夜型・こっそり行動派。",f:"昼は大人しく夜に本領。人知れず確実に成果を残す。夜更かしとこっそりの過剰は禁物。",
+ lk:{タイム:"深夜0時ごろ",習慣:"つめを短く手洗い"},
+ fa:["メスが<b>夜間に肛門周囲へ這い出て産卵</b>し痒みを起こす。子どもに多い。","診断は起床直後に<b>セロハンテープで卵を採取</b>する。","感染力が強いが駆虫薬と手洗いで治せる。"],w:"ぎょう虫"},
+{jp:"鞭虫",la:"Trichuris trichiura",g:"nema",form:"whip",
+ v:"細く食い込む粘り腰。",f:"前半は細く控えめ、後半でどっしり。地味に根を張り離れない粘着質の努力家。",
+ lk:{色:"泥色のアース系",行動:"腰を据える"},
+ fa:["前方が細い鞭状で、細い方を<b>腸粘膜に食い込ませて</b>寄生する。","土壌から卵を口にして感染する土壌伝播性線虫。","重い感染では貧血や下痢を起こすことがある。"],w:"鞭虫"},
+{jp:"鉤虫",la:"Ancylostoma duodenale",g:"nema",form:"hook",
+ v:"足元から忍び寄る策士。",f:"正面突破より搦め手。素足の隙を突いて入り込む。裸足と油断が最大の敵。",
+ lk:{アイテム:"丈夫な長靴",数:"1日0.2mlの覚悟"},
+ fa:["幼虫が<b>皮膚（多くは足）から侵入</b>し、体内を巡って腸に達する。","口の<b>鉤（フック）で腸壁に噛みつき吸血</b>するため貧血の原因になる。","かつて“土食い”の症状で知られた鉄欠乏の一因。"],w:"鉤虫"},
+{jp:"糞線虫",la:"Strongyloides stercoralis",g:"nema",form:"thread",
+ v:"自己増殖する不屈の人。",f:"外の力を借りずとも自分で増えていける自立型。ただし無理を続けると一気に暴走。休息も戦略。",
+ lk:{習慣:"適度に休む",場所:"温暖な土地"},
+ fa:["体内で<b>自家感染（体内で世代を回す）</b>ができ、長期間居座る珍しい線虫。","免疫が落ちると<b>過剰感染</b>を起こし重症化しうる。","沖縄など温暖地でみられ、土壌からの経皮感染が主。"],w:"糞線虫"},
+{jp:"バンクロフト糸状虫",la:"Wuchereria bancrofti",g:"nema",form:"thread",
+ v:"夜に活動するナイトワーカー。",f:"日中は潜み、夜に血が騒ぐタイプ。溜め込む才能は随一。滞りを放置せず“流す”意識を。",
+ lk:{タイム:"就寝後の血中",対策:"蚊よけ徹底"},
+ fa:["蚊が媒介し、成虫が<b>リンパ管に詰まって</b>象皮病（リンパ浮腫）を起こす。","子虫（ミクロフィラリア）は<b>夜間に血中へ出てくる</b>周期性を持つ。","WHOが撲滅を進める顧みられない熱帯病の一つ。"],w:"バンクロフト糸状虫"},
+{jp:"回旋糸状虫",la:"Onchocerca volvulus",g:"nema",form:"thread",
+ v:"見え方を左右する影の存在。",f:"視界と印象を静かに動かす。皮下でこぶを作るように、内に核を蓄える人。かゆみは早めに掻き止めて。",
+ lk:{場所:"川から離れて",対策:"ブヨよけ"},
+ fa:["ブユが媒介し、皮下で成虫が<b>こぶ状の結節</b>を作る。","子虫が目に達すると失明を招き<b>河川盲目症</b>と呼ばれる。","主にアフリカで問題となる線虫症。"],w:"回旋糸状虫"},
+{jp:"旋毛虫",la:"Trichinella spiralis",g:"nema",form:"cystcoil",
+ v:"殻にこもって力を蓄える。",f:"筋肉の奥で丸くなり、時を待つ省エネ型。加熱不足の縁には要注意。焦らぬ者が勝つ。",
+ lk:{フード:"よく火の通った肉",姿勢:"じっと待つ"},
+ fa:["加熱不足の豚肉やジビエで感染し、幼虫が<b>筋肉内で螺旋状に丸まって</b>被嚢する。","発熱・筋肉痛・むくみを起こす旋毛虫症の原因。","中心まで加熱すれば予防できる。"],w:"旋毛虫"},
+{jp:"メジナ虫",la:"Dracunculus medinensis",g:"nema",form:"long",
+ v:"じわじわ長期戦の忍耐王。",f:"1メートル級の長期プロジェクトを地道に完遂。急がば回れの権化。水回りの選択だけは慎重に。",
+ lk:{数:"最長1m",対策:"水を濾して飲む"},
+ fa:["体内で<b>約1mにも伸びる</b>ギニア虫。皮膚から徐々に姿を現す。","汚染水中のケンミジンコを飲むことで感染する。","撲滅目前まで減った、根絶が近い寄生虫として有名。"],w:"メジナ虫"},
+{jp:"イヌ回虫",la:"Toxocara canis",g:"nema",form:"spindle",curl:0.3,
+ v:"迷い込むさすらい人。",f:"本来の居場所を外れても、体を張って進んでいく。行き先を誤らないよう、地図（手洗い）は忘れずに。",
+ lk:{アニマル:"子犬（衛生に注意）",習慣:"公園後の手洗い"},
+ fa:["イヌの回虫だが、人が卵を口にすると幼虫が<b>体内をさまよう（幼虫移行症）</b>。","眼や内臓に迷入して障害を起こすことがある。","砂場や子犬との接触後の手洗いが予防の基本。"],w:"イヌ回虫"},
+{jp:"ネコ回虫",la:"Toxocara cati",g:"nema",form:"spindle",curl:0.28,cat:true,
+ v:"猫と共に丸くなる甘えん坊。",f:"膝の上で丸くなるのが得意な、ぬくもり重視のあなた。甘え上手で懐に入るのが早い。子猫と砂場のあとの手洗いだけは忘れずに。",
+ lk:{アニマル:"子猫（衛生に注意）",習慣:"砂場・トイレ後の手洗い"},
+ fa:["ネコの代表的な回虫で、子猫は<b>母乳を通じて</b>感染することがある。","人が誤って卵を口にすると、イヌ回虫と同様に<b>幼虫移行症</b>を起こしうる。","ネコの糞や砂の扱いに注意し、手洗いが予防になる。"],w:"ネコ回虫"},
+{jp:"広東住血線虫",la:"Angiostrongylus cantonensis",g:"nema",form:"spindle",curl:0.35,
+ v:"意外なルートで攻める人。",f:"正攻法を外し、思いがけない経路から核心へ。ナメクジ的な“遅くて確実”を侮るなかれ。生食は避けて。",
+ lk:{フード:"加熱した野菜",注意:"ナメクジに触れたら手洗い"},
+ fa:["ナメクジやカタツムリを介し、幼虫が人の<b>脳・髄膜に達して</b>好酸球性髄膜炎を起こす。","加熱不足の巻貝や汚染野菜の生食が感染源。","レタス等はよく洗い、巻貝は加熱するのが予防。"],w:"広東住血線虫"},
+/* CESTODA */
+{jp:"無鉤条虫",la:"Taenia saginata",g:"cest",seg:6,scolex:"suckers",hooks:false,
+ v:"物腰やわらか、フックなしの人格者。",f:"角を立てず吸盤だけで信頼を掴む温和派。長く付き合えるが、じわじわ伸びる存在感に本人は無自覚。",
+ lk:{フード:"よく焼いた牛",数:"数m級の器"},
+ fa:["牛肉から感染する<b>鉤のない条虫</b>。頭の吸盤だけで腸に着く。","腸内で<b>数mに達する</b>ことがあるが症状は乏しい。","加熱で予防でき、駆虫も可能。"],w:"無鉤条虫"},
+{jp:"有鉤条虫",la:"Taenia solium",g:"cest",seg:6,scolex:"hooks",hooks:true,
+ v:"鉤を隠し持つ油断ならぬ人。",f:"普段は穏やかでも要所で鉤を出す抜け目なさ。幼虫が思わぬ場所へ回る点だけは要注意。生の豚は避けて。",
+ lk:{フード:"中まで火の通った豚",注意:"卵の経口摂取を避ける"},
+ fa:["豚肉由来で頭部に<b>鉤の冠</b>を持つ条虫。","卵を人が飲むと幼虫が<b>脳などに囊虫（のうちゅう）を作る</b>有鉤囊虫症を起こしうる。","加熱と衛生管理が予防の要。"],w:"有鉤条虫"},
+{jp:"日本海裂頭条虫",la:"Diphyllobothrium nihonkaiense",g:"cest",seg:7,scolex:"bothria",broad:true,
+ v:"じわじわ伸びる大器晩成型。",f:"焦らず節を重ねて成長。派手さより持久力。溜め込みすぎたら、たまに手放して。",
+ lk:{フード:"よく加熱した鮭",数:"1日1節ずつ"},
+ fa:["サクラマス等の生食で感染し腸内で<b>数mに伸びる</b>サナダムシ。","頭部は吸盤でなく<b>2本の溝（吸溝）</b>で着く。","排便時に体の一部が出て気づくことが多い。"],w:"日本海裂頭条虫"},
+{jp:"エキノコックス",la:"Echinococcus multilocularis",g:"cest",seg:3,scolex:"hooks",hooks:true,
+ v:"時間をかけ根を張る戦略家。",f:"短期決戦は苦手でも長期戦は無敵。静かに確実に足場を広げる。手洗いと山の誘惑にだけ注意。",
+ lk:{アニマル:"キツネ（遠くから）",習慣:"手洗い徹底"},
+ fa:["成虫は<b>数節しかない小さな条虫</b>だが、人では幼虫が肝臓で<b>ゆっくり増殖</b>する。","終宿主はキツネ・イヌで、北海道を中心に注意が必要。","潜伏が数年〜十数年と長い。"],w:"エキノコックス"},
+{jp:"小形条虫",la:"Hymenolepis nana",g:"cest",seg:5,scolex:"hooks",hooks:true,
+ v:"小さくても自己完結の実力者。",f:"体は小さいが、中間宿主なしで完結できる自立派。派手さより効率。手洗いが運気の底上げに。",
+ lk:{数:"数cmの小回り",習慣:"手指の清潔"},
+ fa:["ヒトに寄生する<b>最も小さい条虫</b>の一つ。","中間宿主なしで<b>人から人へ直接感染</b>できる珍しい生活環を持つ。","衛生環境が悪い地域や小児で多い。"],w:"小形条虫"},
+{jp:"瓜実条虫",la:"Dipylidium caninum",g:"cest",seg:6,scolex:"suckers",uterus:"rose",cat:true,
+ v:"種を蒔く播種型。",f:"瓜の種のような節を次々こぼす、拡散上手。ペットとの距離感とノミ対策で運気が安定。",
+ lk:{アニマル:"犬猫（ノミ予防を)",対策:"ノミ駆除"},
+ fa:["犬猫の条虫で、片節が<b>瓜の種の形</b>をしている。","感染した<b>ノミを飲み込む</b>ことで人にもうつる。","ペットのノミ対策が予防になる。"],w:"瓜実条虫"},
+{jp:"マンソン裂頭条虫",la:"Spirometra erinaceieuropaei",g:"cest",seg:6,scolex:"bothria",
+ v:"意外な形で表に出る人。",f:"思わぬ経路で存在を現すサプライズ型。生食と生水に気をつければ、その意外性は魅力に変わる。",
+ lk:{フード:"加熱したカエル・蛇は避ける",対策:"生水を飲まない"},
+ fa:["幼虫（<b>スパルガナム</b>）が人の皮下や眼などに寄生する裂頭条虫。","カエルや蛇の生食、ケンミジンコを含む生水で感染しうる。","移動するしこりとして現れることがある。"],w:"マンソン裂頭条虫"},
+/* TREMATODA */
+{jp:"肝蛭",la:"Fasciola hepatica",g:"trem",form:"leaf",
+ v:"木の葉のように柔軟な人。",f:"形を変えて環境に馴染む柔軟派。肝の据わった大物だが、生の水草には近づかないのが吉。",
+ lk:{フード:"生のセリ・クレソンは避ける",姿勢:"柔軟に構える"},
+ fa:["<b>木の葉形の大きな吸虫</b>で、牛や人の肝臓・胆管に寄生する。","水生植物（セリ等）に付いた幼虫を生食して感染する。","肝臓や胆管の炎症を起こす。"],w:"肝蛭"},
+{jp:"日本住血吸虫",la:"Schistosoma japonicum",g:"trem",form:"paired",
+ v:"生涯添い遂げる一途者。",f:"雌雄が寄り添って離れない究極の相棒運。ただし水辺の縁は選んで。歴史を変えた撲滅の物語も背負う。",
+ lk:{ペア:"生涯のパートナー",場所:"きれいな流れ"},
+ fa:["<b>雄が溝で雌を抱えて</b>血管内に寄生する、雌雄異体の吸虫。","幼虫が<b>皮膚から侵入</b>し、卵が肝や腸に沈着して障害を起こす。","かつて日本の風土病だったが、対策で撲滅された。"],w:"日本住血吸虫"},
+{jp:"肝吸虫",la:"Clonorchis sinensis",g:"trem",form:"slender",
+ v:"細身で長居する常連。",f:"細くしなやかに、居心地よく長居するタイプ。淡水魚の生食だけは控えめに。滞在は上手だが換気も大事。",
+ lk:{フード:"淡水魚の刺身は避ける",習慣:"適度に流す"},
+ fa:["淡水魚の生食で感染し、<b>胆管に長く寄生</b>する細長い吸虫。","長期感染は胆管の病変と関連する。","加熱で予防できる。"],w:"肝吸虫"},
+{jp:"肺吸虫",la:"Paragonimus westermani",g:"trem",form:"ovoid",
+ v:"深呼吸で成果を出す人。",f:"呼吸を整え、じっくり定着する落ち着き型。モクズガニ等の生食に注意すれば、その粘りは大きな武器に。",
+ lk:{フード:"加熱したカニ",呼吸:"深呼吸で整える"},
+ fa:["モクズガニ・ザリガニの生食で感染し、<b>肺に寄生</b>する厚みのある吸虫。","咳や血痰など、結核に似た症状を起こすことがある。","甲殻類の加熱で予防できる。"],w:"肺吸虫"},
+{jp:"横川吸虫",la:"Metagonimus yokogawai",g:"trem",form:"tiny",
+ v:"小粒でもピリリと存在感。",f:"ごく小さいのに確かに居る、名脇役タイプ。アユの塩焼き文化圏の常連。数の力で運を回す。",
+ lk:{フード:"よく焼いたアユ",数:"小さくても侮れない"},
+ fa:["<b>日本で最も多い吸虫の一つ</b>とされる、ごく小型の腸吸虫。","アユやシラウオの生食・不十分な加熱で感染する。","少数なら無症状のことが多い。"],w:"横川吸虫"},
+{jp:"ロイコクロリディウム",la:"Leucochloridium paradoxum",g:"trem",form:"broodsac",
+ v:"見せ方の天才、目立ってなんぼ。",f:"地味な日常を鮮やかな縞に演出できる人。目立つことで運を呼ぶ。ただし目立ちすぎて“食べられる”のは注意。",
+ lk:{色:"緑×琥珀の縞",行動:"あえて目立つ場所へ"},
+ fa:["カタツムリの<b>触角に入り込み脈打つ縞模様</b>となる。","イモムシに擬態して<b>鳥に食べさせ</b>、終宿主へ移る（外見の乗っ取り）。","感染した貝は明るい場所へ出て捕食されやすくなる。"],w:"ロイコクロリディウム"},
+/* PROTOZOA */
+{jp:"マラリア原虫",la:"Plasmodium falciparum",g:"proto",sub:"ring",
+ v:"人を惹きつける魔性の魅力。",f:"周りに人（と蚊）が集まる求心力。魅了の力は天下一品。使い方次第で運命が変わる。虫よけは常備で。",
+ lk:{タイム:"日没後の薄暗がり",アイテム:"蚊帳"},
+ fa:["ハマダラカが媒介し、<b>赤血球に侵入して</b>増殖する。","感染者の匂いを<b>蚊にとって魅力的に変える</b>という研究がある。","世界で最も死者を出してきた感染症の一つ。"],w:"マラリア"},
+{jp:"トキソプラズマ",la:"Toxoplasma gondii",g:"proto",sub:"crescent",cat:true,
+ v:"人を動かす静かな支配者。",f:"表に出ないのに場を動かす。ネコ好きと危険な誘いに弱く、気づけば大胆な選択も。その大胆さ、本当に自分の意思？",
+ lk:{アニマル:"ネコ（終宿主）",傾向:"少しの怖いもの見たさ"},
+ fa:["終宿主は<b>ネコ科</b>。感染ネズミが<b>ネコを恐れなくなる</b>行動操作が知られる。","世界人口のかなりが不顕性に保有するありふれた原虫。","妊娠中の初感染は注意が必要。"],w:"トキソプラズマ"},
+{jp:"ランブル鞭毛虫",la:"Giardia lamblia",g:"proto",sub:"giardia",
+ v:"愛嬌で乗り切る人気者。",f:"“顔”のある愛嬌でどこでも馴染む。ただし生水と旅先の油断は禁物。清潔第一で人気は長続き。",
+ lk:{対策:"生水を飲まない",場所:"清潔な水場"},
+ fa:["2つの核が<b>顔のように見える</b>洋なし形の鞭毛虫。","汚染水を介して感染し、下痢を起こすジアルジア症の原因。","旅行者下痢症の一因として知られる。"],w:"ランブル鞭毛虫"},
+{jp:"赤痢アメーバ",la:"Entamoeba histolytica",g:"proto",sub:"amoeba",
+ v:"形を持たない自由人。",f:"決まった型に縛られず変幻自在。自由さは魅力だが、暴れると周囲を溶かすほど。衛生と節度で角を丸く。",
+ lk:{習慣:"手洗い・生水回避",姿勢:"角を立てない"},
+ fa:["決まった形を持たず<b>偽足で動く</b>アメーバ。","大腸粘膜を<b>溶かして</b>アメーバ赤痢を起こしうる。","汚染された水・食物から経口感染する。"],w:"赤痢アメーバ"},
+{jp:"クリプトスポリジウム",la:"Cryptosporidium",g:"proto",sub:"oocyst",
+ v:"守りが堅い難攻不落タイプ。",f:"硬い殻で守りは鉄壁、塩素も効きにくい強靭さ。頑固さは長所。たまには殻を開けて水に流す柔軟さも。",
+ lk:{対策:"水は煮沸/濾過",守り:"殻は堅く"},
+ fa:["<b>塩素消毒に強い硬いオーシスト</b>で水を介して広がる。","水道汚染による集団下痢の原因になったことがある。","煮沸や適切な濾過が有効。"],w:"クリプトスポリジウム"},
+{jp:"トリパノソーマ（睡眠病）",la:"Trypanosoma brucei",g:"proto",sub:"tryp",cform:false,
+ v:"眠りを支配する夜の住人。",f:"周囲のリズムを緩やかに乱す催眠術師。睡眠を制する者は運を制す。ツェツェバエの縁だけは避けて。",
+ lk:{タイム:"良質な睡眠",対策:"虫よけ"},
+ fa:["ツェツェバエが媒介し、<b>波打つ膜（波動膜）</b>で血中を泳ぐ鞭毛虫。","進行すると<b>アフリカ睡眠病</b>を起こす。","表面抗原を次々変えて免疫から逃れる。"],w:"トリパノソーマ"},
+{jp:"クルーズトリパノソーマ",la:"Trypanosoma cruzi",g:"proto",sub:"tryp",cform:true,
+ v:"心に忍び込む静かな同居人。",f:"気づかぬうちに深く住み着く長期同居型。長い付き合いになる分、初期の見極めが肝心。",
+ lk:{対策:"サシガメに注意",姿勢:"早めに気づく"},
+ fa:["サシガメが媒介し、<b>C字形</b>の体で知られる鞭毛虫。","中南米の<b>シャーガス病</b>を起こし、心臓に影響しうる。","慢性化して長期に潜伏する。"],w:"シャーガス病"},
+{jp:"リーシュマニア",la:"Leishmania",g:"proto",sub:"tryp",cform:true,
+ v:"内に籠って力を溜める人。",f:"細胞の奥にこもって静かに増える内向パワー型。皮膚や内臓に痕を残すことも。サシチョウバエの縁に注意。",
+ lk:{対策:"サシチョウバエよけ",場所:"乾いた高地"},
+ fa:["サシチョウバエが媒介し、<b>免疫細胞の中で増える</b>原虫。","皮膚型は潰瘍を、内臓型は発熱や脾腫を起こす。","旧世界・新世界の熱帯で問題となる。"],w:"リーシュマニア症"},
+{jp:"腟トリコモナス",la:"Trichomonas vaginalis",g:"proto",sub:"trichomonas",
+ v:"フットワーク軽い社交家。",f:"鞭毛でくるくる、身軽で人懐こい社交派。親密な縁を大切にしつつ、パートナーと一緒にケアを。",
+ lk:{習慣:"パートナーと同時ケア",姿勢:"軽やかに"},
+ fa:["4本の前鞭毛と波動膜で<b>活発に動く</b>鞭毛虫。","性感染症トリコモナス症の原因で、共に治療するのが基本。","治療薬でしっかり治せる。"],w:"トリコモナス症"},
+{jp:"バベシア",la:"Babesia",g:"proto",sub:"maltese",
+ v:"仲間と十字を組む結束型。",f:"複数で“十字”に整列する連携の名手。チーム運が強い。マダニの縁だけは断って。",
+ lk:{形:"マルタ十字",対策:"マダニよけ"},
+ fa:["マダニが媒介し、<b>赤血球内で4つが十字（マルタ十字）に並ぶ</b>ことがある。","マラリアに似た発熱・溶血を起こすバベシア症の原因。","マダニ対策が予防になる。"],w:"バベシア症"},
+{jp:"フォーラーネグレリア",la:"Naegleria fowleri",g:"proto",sub:"amoeba",
+ v:"猪突猛進の一点突破。",f:"温かい水を得ると一気に加速する情熱家。ただし勢い任せは危険。淡水の鼻うがいと飛び込みには要注意。",
+ lk:{対策:"温かい淡水で鼻に水を入れない",姿勢:"勢いを制御"},
+ fa:["温かい淡水にすむ<b>“殺人アメーバ”</b>とも呼ばれる原虫。","鼻から入り<b>脳に達する</b>と重篤な髄膜脳炎を起こす（稀）。","汚染された温水での鼻への注水を避ける。"],w:"フォーラーネグレリア"},
+{jp:"アカントアメーバ",la:"Acanthamoeba",g:"proto",sub:"acantha",
+ v:"棘を持つ孤高の存在。",f:"周囲に棘（アカントポディア）を張る独立独歩。レンズの衛生を守れば、その鋭さは強みになる。",
+ lk:{習慣:"コンタクトの衛生",姿勢:"距離感を保つ"},
+ fa:["表面に<b>棘状の突起（アカントポディア）</b>を持つアメーバ。","コンタクトレンズの不衛生で<b>角膜炎</b>を起こすことがある。","レンズの適切な洗浄・保存が予防。"],w:"アカントアメーバ"},
+/* ARTHROPODA */
+{jp:"アタマジラミ",la:"Pediculus humanus capitis",g:"arth",sub:"louse",
+ v:"距離ゼロの密着派。",f:"髪一本の距離で寄り添う密着型。人とのつながりは濃厚。集団の場では“分け合い”に少し注意を。",
+ lk:{アイテム:"目の細かい櫛",習慣:"寝具を清潔に"},
+ fa:["頭髪に寄生し<b>脚の鉤爪で毛を掴む</b>吸血性のシラミ。","子ども同士の接触で広がりやすい。","専用の櫛や薬剤で駆除できる。"],w:"アタマジラミ"},
+{jp:"ケジラミ",la:"Pthirus pubis",g:"arth",sub:"crab",
+ v:"がっちり掴んで離さない人。",f:"大きな鉤爪でしっかり掴む安定志向。親密な縁に強いが、パートナーと一緒のケアが円満の鍵。",
+ lk:{形:"カニ型の爪",習慣:"寝具と同時ケア"},
+ fa:["<b>カニのような大きな爪</b>を持ち、太い体毛に掴まる。","主に性的接触で広がるシラミ。","駆除薬と衛生管理で対処できる。"],w:"ケジラミ"},
+{jp:"ヒゼンダニ",la:"Sarcoptes scabiei",g:"arth",sub:"mite",
+ v:"トンネルを掘る職人肌。",f:"皮膚に道を掘り進む地道な職人。夜にうずく情熱家でもある。早めのケアで痒みも運も好転。",
+ lk:{タイム:"夜の痒みに注意",習慣:"早めの受診"},
+ fa:["皮膚の<b>角層にトンネルを掘って</b>産卵するダニ。","激しい痒みの疥癬（かいせん）を起こす。","接触でうつり、治療薬で治せる。"],w:"ヒゼンダニ"},
+{jp:"ミミヒゼンダニ",la:"Otodectes cynotis",g:"arth",sub:"mite",cat:true,
+ v:"耳元でささやく甘え上手。",f:"そっと耳元に寄り添う距離感の名人。愛猫が頭をこすりつけてくる仕草に弱いあなた。むずむずのサインは早めに拾って、耳のケアを忘れずに。",
+ lk:{場所:"愛猫の耳の中",習慣:"耳の観察とケア"},
+ fa:["ネコの<b>外耳道に寄生する“耳ダニ”</b>で、黒い耳垢と激しい痒みを起こす。","接触で<b>ネコ同士・イヌにもうつる</b>ことがある。","動物病院での駆除で治せる。"],w:"ミミヒゼンダニ"},
+{jp:"マダニ",la:"Ixodes",g:"arth",sub:"tick",
+ v:"腰を据えて吸収する人。",f:"一度掴んだら数日離れない粘着質の吸収力。学びを溜め込む才能は随一。だが無理な引き剥がしは禁物、専門家へ。",
+ lk:{アイテム:"ダニ取り器具",場所:"草むらを避ける"},
+ fa:["数日かけて<b>じっくり吸血</b>し、体が大きく膨らむ。","日本紅斑熱やSFTSなど<b>感染症を媒介</b>することがある。","無理に引き抜かず適切に除去する。"],w:"マダニ"},
+{jp:"ツツガムシ",la:"Leptotrombidium",g:"arth",sub:"chigger",
+ v:"幼い時だけ本気を出す人。",f:"人生の一時期だけ全力で刻む集中型。その一瞬に運命が宿る。野山では肌の露出を控えめに。",
+ lk:{対策:"長袖長ズボン",場所:"草地に注意"},
+ fa:["<b>幼虫の時だけ吸着</b>して組織液を吸うダニ。","ツツガムシ病（リケッチア）を媒介する。","野外活動時の防護が予防になる。"],w:"ツツガムシ"},
+{jp:"ニキビダニ",la:"Demodex folliculorum",g:"arth",sub:"demodex",
+ v:"あなたに一番近い同居人。",f:"実はほぼ全員の顔に棲む、いちばん身近な相棒。無害でひっそり。気にしすぎず、肌を清潔に。",
+ lk:{場所:"毛穴の中",習慣:"やさしい洗顔"},
+ fa:["人の<b>毛包（毛穴）にすむ</b>細長いダニで、多くの成人が保有する。","普段は無害な常在生物。","過剰増殖が皮膚トラブルと関連することがある。"],w:"ニキビダニ"},
+{jp:"トコジラミ",la:"Cimex lectularius",g:"arth",sub:"bedbug",
+ v:"夜に忍び寄る旅の同行者。",f:"荷物に紛れて世界を巡る旅上手。夜行性の逞しさは折り紙付き。宿選びと荷物チェックで運気安定。",
+ lk:{タイム:"就寝時に注意",習慣:"旅先で荷物を確認"},
+ fa:["夜間に人を吸血する<b>平たい卵形</b>の昆虫（南京虫）。","荷物や家具に潜んで運ばれ広がる。","近年、宿泊施設などで再び問題化している。"],w:"トコジラミ"},
+{jp:"ヒトノミ",la:"Pulex irritans",g:"arth",sub:"flea",
+ v:"跳躍力で局面を変える人。",f:"自分の体長の何十倍も跳ぶジャンパー。停滞を一気に飛び越える瞬発力が武器。着地点だけは見定めて。",
+ lk:{数:"体長の数十倍の跳躍",習慣:"寝具の清潔"},
+ fa:["強力な後脚で<b>体長の何十倍も跳躍</b>する吸血昆虫。","歴史的にはペスト媒介で知られる。","衛生管理と駆除で対処する。"],w:"ヒトノミ"},
+{jp:"ネコノミ",la:"Ctenocephalides felis",g:"arth",sub:"flea",cat:true,
+ v:"跳んで甘えるツンデレ。",f:"素っ気ないのに気づけば隣にいる、猫のようなツンデレ気質。距離を詰める跳躍力は抜群。愛猫と寝床のノミ対策を一緒にすれば運気も安定。",
+ lk:{アニマル:"ネコ（ノミ予防を）",習慣:"寝床とブラッシング"},
+ fa:["ネコにもイヌにも<b>最も多く寄生するノミ</b>で、人も刺す。","<b>瓜実条虫やネコひっかき病の病原体を媒介</b>することがある。","環境と宿主の同時対策で駆除する。"],w:"ネコノミ"},
+{jp:"ヒトヒフバエ",la:"Dermatobia hominis",g:"arth",sub:"maggot",
+ v:"人に運ばせる策士。",f:"蚊に卵を託して運ばせる知恵者。他人の力を借りるのが上手い。中南米の旅では虫よけを厚めに。",
+ lk:{対策:"虫よけ厚め",場所:"熱帯を旅する時注意"},
+ fa:["<b>蚊などに卵を運ばせて</b>人の皮膚に幼虫が寄生する（ハエ症）。","幼虫は皮下でしこりを作り、呼吸孔から空気を取り入れる。","中南米に分布する。"],w:"ヒトヒフバエ"},
+{jp:"スナノミ",la:"Tunga penetrans",g:"arth",sub:"tunga",
+ v:"根を張って膨らむ定住派。",f:"足元にどっしり定住し、内に蓄えて膨らむ人。地に足つく強みの反面、履物選びは慎重に。",
+ lk:{アイテム:"しっかりした靴",場所:"砂地に注意"},
+ fa:["メスが<b>皮膚（多くは足）に潜り込み</b>、卵を抱えて大きく膨らむ極小のノミ。","砂ノミ症を起こし、素足での歩行が感染源。","靴を履くことが予防になる。"],w:"スナノミ"},
+/* SINGLETONS */
+{jp:"ハリガネムシ",la:"Nematomorpha",g:"gordian",
+ v:"最後は水辺に還るロマンチスト。",f:"操られているようで宿命に忠実。ここぞで自らを水際へ導く。飛び込む勇気は一級品。",
+ lk:{場所:"川辺・用水路",行動:"思い切って飛び込む"},
+ fa:["カマキリ等の体内で育ち、成熟すると<b>宿主を入水させて</b>水中で繁殖する。","宿主の脳に働きかけ水面へ誘導すると考えられる。","川に落ちた宿主は渓流魚の重要な餌になる。"],w:"ハリガネムシ"},
+{jp:"ウオノエ",la:"Cymothoa exigua",g:"isopod",
+ v:"ポジションを奪い取る下剋上型。",f:"空いた席に迷わずおさまり、機能まで肩代わりする働き者。“いないと困る存在”になれる。ただし乗っ取り過ぎは嫌われる。",
+ lk:{ポジション:"魚の舌の上",行動:"空席にすっと座る"},
+ fa:["魚の口に入り、<b>舌を退化させて自らが舌の代わり</b>になる甲殻類。","宿主の食べ物をかすめ取りつつ舌の機能を代替する。","脊椎動物の器官を機能的に置き換える珍しい例。"],w:"ウオノエ"},
+{jp:"カンディル",la:"Vandellia cirrhosa",g:"fish",
+ v:"噂が独り歩きするミステリアス。",f:"実像以上に恐れられ語り草になる人。ミステリアスさは武器。ただし尾ひれ付きの噂に本人が振り回されがち。",
+ lk:{場所:"アマゾンの濁り水",行動:"噂を泳がせておく"},
+ fa:["他の魚の<b>エラに入り吸血</b>する小型のナマズ。","人体侵入の逸話は<b>多くが誇張された都市伝説</b>とされる。","本業は魚類への寄生。"],w:"カンディル"}
+];
+
+/* =========================================================
+   描画
+========================================================= */
+const RANKS=["宿主適性 SS","宿主適性 S","宿主適性 A","共生ランク B+","希少検体 ★","要冷凍 ⚠"];
+const CAT_MARK='<span class="catbadge"><span class="paw">ᓚᘏᗢ</span> 猫好きに縁のある検体</span>';
+
+// 猫縁の種は占ひで出やすくする重み付け（決定論・シードは再現）
+function weightedIndex(rng){
+  let tot=0;const w=DATA.map(sp=>{const x=sp.cat?2.6:1;tot+=x;return x;});
+  let r=rng()*tot;for(let i=0;i<DATA.length;i++){r-=w[i];if(r<0)return i;}return DATA.length-1;
+}
+
+function plateHTML(sp,i){
+  const n=i+1;
+  return `<div class="mount"><div class="plate">
+    <span class="cartouche">PLATE ${roman(n)}</span>
+    <span class="figno">Fig. ${n}</span>
+    <div class="frame"></div>
+    <span class="corner" style="top:9px;left:9px;border-right:none;border-bottom:none"></span>
+    <span class="corner" style="top:9px;right:9px;border-left:none;border-bottom:none"></span>
+    <span class="corner" style="bottom:9px;left:9px;border-right:none;border-top:none"></span>
+    <span class="corner" style="bottom:9px;right:9px;border-left:none;border-top:none"></span>
+    ${illoSVG(sp)}
+    <div class="scale"><span class="bar"></span><span>SCALE — SCHEMATIC / 模式図</span></div>
+    <div class="caption">
+      <div class="binom">${sp.la}</div>
+      <div class="jp">${sp.jp}</div>
+      <div class="grp">${GRP_LABEL[sp.g]||''}</div>
+    </div>
+  </div></div>`;
+}
+
+function factsHTML(sp){
+  return `<div class="facts">
+    <h3>◉ この寄生虫の<span class="real">本物の生態</span></h3>
+    ${sp.fa.map(f=>`<div class="fact-row"><span class="dot">▸</span><span class="txt">${f}</span></div>`).join('')}
+    <a class="reflink" href="https://ja.wikipedia.org/wiki/${encodeURIComponent(sp.w)}" target="_blank" rel="noopener">
+      参考写真・詳細を見る <small>（外部・Wikipedia）</small> ↗</a>
+  </div>`;
+}
+
+function oracleHTML(sp,i,seed,rank){
+  const lk=Object.entries(sp.lk);
+  return `<div class="plate-card">
+    ${plateHTML(sp,i)}
+    <div class="oracle">
+      <span class="rank">${rank}</span>${sp.cat?CAT_MARK:''}
+      <p class="verdict">「${sp.v}」</p>
+      <p class="fortune">${sp.f}</p>
+      <div class="lucky">${lk.map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>
+    </div>
+    ${factsHTML(sp)}
+    <div class="actions"><span class="seed">SEED ${seed} ・ PLATE ${roman(i+1)}</span>
+      <button class="again" id="againBtn">別の検体を捕獲</button></div>
+  </div>`;
+}
+
+function renderOracle(seed){
+  const rng=mulberry32(seed);
+  const i=weightedIndex(rng);
+  const rank=pick(rng,RANKS);
+  document.getElementById('stage').innerHTML=oracleHTML(DATA[i],i,seed,rank);
+  document.getElementById('seedEcho').textContent='SEED : '+seed;
+  document.getElementById('againBtn').addEventListener('click',()=>{
+    const s=(Math.random()*4294967296)>>>0;renderOracle(s);
+    document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  document.getElementById('stage').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---- collection shelf ---- */
+function buildShelf(){
+  const el=document.getElementById('shelf');
+  el.innerHTML=DATA.map((sp,i)=>`
+    <div class="thumb" data-i="${i}">
+      ${sp.cat?'<span class="catmark">ᓚᘏᗢ</span>':''}
+      <div class="mini">${illoSVG(sp)}</div>
+      <div class="tno">Pl. ${roman(i+1)}</div>
+      <div class="tjp">${sp.jp}</div>
+    </div>`).join('');
+  el.querySelectorAll('.thumb').forEach(t=>t.addEventListener('click',()=>openDetail(+t.dataset.i)));
+}
+function openDetail(i){
+  const sp=DATA[i];
+  document.getElementById('shelfStage').innerHTML=`<div class="plate-card">${plateHTML(sp,i)}
+    <div class="oracle">${sp.cat?CAT_MARK:''}<p class="verdict">「${sp.v}」</p><p class="fortune">${sp.f}</p></div>
+    ${factsHTML(sp)}</div>`;
+  document.getElementById('shelf').classList.add('hidden');
+  document.getElementById('shelfDetail').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('backBtn').addEventListener('click',()=>{
+  document.getElementById('shelfDetail').classList.add('hidden');
+  document.getElementById('shelf').classList.remove('hidden');
+});
+
+/* ---- tabs ---- */
+function setTab(which){
+  const o=document.getElementById('oracleView'),s=document.getElementById('shelfView');
+  const to=document.getElementById('tabOracle'),ts=document.getElementById('tabShelf');
+  if(which==='oracle'){o.classList.remove('hidden');s.classList.add('hidden');to.classList.add('on');ts.classList.remove('on');}
+  else{s.classList.remove('hidden');o.classList.add('hidden');ts.classList.add('on');to.classList.remove('on');
+    document.getElementById('shelfDetail').classList.add('hidden');document.getElementById('shelf').classList.remove('hidden');}
+}
+document.getElementById('tabOracle').addEventListener('click',()=>setTab('oracle'));
+document.getElementById('tabShelf').addEventListener('click',()=>setTab('shelf'));
+
+/* ---- events ---- */
+function seedFromName(){const v=document.getElementById('nameInput').value.trim();return v?hashStr(v):((Math.random()*4294967296)>>>0);}
+document.getElementById('divineBtn').addEventListener('click',()=>renderOracle(seedFromName()));
+document.getElementById('randomBtn').addEventListener('click',()=>{document.getElementById('nameInput').value='';renderOracle((Math.random()*4294967296)>>>0);});
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')renderOracle(seedFromName());});
+
+buildShelf();
+</script>
+</body>
+</html>
